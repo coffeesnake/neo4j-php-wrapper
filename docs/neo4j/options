@@ -1,0 +1,31 @@
+-classpath
+'/home/mattias/Dev/Java/svn.neo4j.org/examples/apoc-examples/tags/1.0/target/classes:/home/mattias/.m2/repository/org/neo4j/neo4j-shell/1.0/neo4j-shell-1.0.jar:/home/mattias/.m2/repository/org/apache/lucene/lucene-core/2.9.1/lucene-core-2.9.1.jar:/home/mattias/.m2/repository/org/apache/geronimo/specs/geronimo-jta_1.1_spec/1.1.1/geronimo-jta_1.1_spec-1.1.1.jar:/home/mattias/.m2/repository/org/neo4j/neo4j-remote-graphdb/0.6/neo4j-remote-graphdb-0.6.jar:/home/mattias/.m2/repository/jline/jline/0.9.94/jline-0.9.94.jar:/home/mattias/.m2/repository/org/neo4j/neo4j-kernel/1.0/neo4j-kernel-1.0.jar:/home/mattias/.m2/repository/org/neo4j/neo4j-commons/1.0/neo4j-commons-1.0.jar:/home/mattias/.m2/repository/org/neo4j/neo4j-index/1.0/neo4j-index-1.0.jar'
+-encoding
+'UTF-8'
+-protected
+-quiet
+-sourcepath
+'/home/mattias/Dev/Java/svn.neo4j.org/examples/apoc-examples/tags/1.0/target/sources'
+-author
+-bottom
+'Copyright &#169; 2010 <a href="http://neo4j.org/">Neo4j</a>. All Rights Reserved.'
+-charset
+'UTF-8'
+-d
+'/home/mattias/Dev/Java/svn.neo4j.org/examples/apoc-examples/tags/1.0/target/appassembler/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'Neo4j Apoc 1.0 API'
+-group
+'Kernel' 'org.neo4j.kernel:org.neo4j.graphdb'
+-group
+'Index' 'org.neo4j.index:org.neo4j.index.*'
+-group
+'Remote' 'org.neo4j.remote:org.neo4j.remote.*'
+-link
+'http://java.sun.com/j2se/1.5.0/docs/api'
+-use
+-version
+-windowtitle
+'Neo4j Apoc 1.0 API'

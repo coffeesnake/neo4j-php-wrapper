@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+    <!-- support for JEE cluster -->
+    <distributable/>
+
+    <!-- Attach the JSR223 script factory to the servlet context -->
+    <listener>
+        <listener-class>php.java.servlet.ContextLoaderListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.petroquick.neo4j.Neo4JGatewayListener</listener-class>
+    </listener>
+
+    <!-- PHP Servlet: back-end for Apache or IIS -->
+    <servlet>
+        <servlet-name>PhpJavaServlet</servlet-name>
+        <servlet-class>php.java.servlet.PhpJavaServlet</servlet-class>
+
+        <load-on-startup>0</load-on-startup>
+    </servlet>
+
+    <!-- PHP CGI servlet: when IIS or Apache are not available -->
+    <servlet>
+        <servlet-name>PhpCGIServlet</servlet-name>
+        <servlet-class>php.java.servlet.PhpCGIServlet</servlet-class>
+
+         <!-- Your php binary. Default is /usr/bin/php-cgi or -->
+         <!-- c:/Program Files/PHP/php-cgi.exe -->
+        <!--
+         <init-param>
+           <param-name>php_exec</param-name>
+           <param-value>php-cgi</param-value>
+         </init-param>
+        -->
+
+         <!-- Prefer the system php-cgi executable (see DEFAULT_CGI_LOCATIONS) -->
+         <!-- over a local WEB-INF/cgi/php-cgi-xxx-yyy[.sh|.exe]? -->
+         <!-- Default is to try a local php-cgi executable first. -->
+         <init-param>
+           <param-name>prefer_system_php_exec</param-name>
+           <param-value>On</param-value>
+         </init-param>
+
+        <!-- The number of PHP processes waiting in the FastCGI pool -->
+        <!-- Default is 5. -->
+        <!--
+         <init-param>
+           <param-name>php_fcgi_children</param-name>
+           <param-value>5</param-value>
+         </init-param>
+        -->
+
+        <!-- Automatically include java/JavaProxy.php  -->
+        <!-- Switch this off if you don't use Java in all of your scripts -->
+        <!-- Default is On. -->
+         <init-param>
+           <param-name>php_include_java</param-name>
+           <param-value>Off</param-value>
+         </init-param>
+
+        <load-on-startup>0</load-on-startup>
+    </servlet>
+
+    <!-- PHP Servlet Mapping -->
+    <servlet-mapping>
+        <servlet-name>PhpJavaServlet</servlet-name>
+        <url-pattern>*.phpjavabridge</url-pattern>
+    </servlet-mapping>
+
+    <!-- PHP CGI Servlet Mapping -->
+    <servlet-mapping>
+        <servlet-name>PhpCGIServlet</servlet-name>
+        <url-pattern>*.php</url-pattern>
+    </servlet-mapping>
+
+    <!-- Welcome files -->
+    <welcome-file-list>
+        <welcome-file>index.php</welcome-file>
+    </welcome-file-list>
+
+</web-app>

@@ -1,0 +1,7 @@
+org.neo4j.graphdb
+org.neo4j.index
+org.neo4j.index.lucene
+org.neo4j.index.timeline
+org.neo4j.kernel
+org.neo4j.remote
+org.neo4j.remote.transports
