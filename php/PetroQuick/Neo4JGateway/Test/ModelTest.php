@@ -69,9 +69,6 @@ class PetroQuick_Neo4JGateway_Test_ModelTest extends PHPUnit_Framework_TestCase 
         $userModel->ensureSchemaCreated();
         $subrefNode = $userModel->getSubrefNode();
         $this->assertNotNull($subrefNode, "subrefNode is null");
-
-        $id = intval(java_values($subrefNode->getProperty(PetroQuick_Model_User::NEXT_ID_VALUE)));
-        $this->assertGreaterThanOrEqual($id, 1, 'NEXT_ID_VALUE < 1.');
     }
 
     /**
@@ -86,13 +83,10 @@ class PetroQuick_Neo4JGateway_Test_ModelTest extends PHPUnit_Framework_TestCase 
         $userModel->ensureSchemaCreated();
         $subrefNode = $userModel->getSubrefNode();
         $this->assertNotNull($subrefNode, "subrefNode is null");
-
-        $id = intval(java_values($subrefNode->getProperty(PetroQuick_Model_User::NEXT_ID_VALUE)));
-        $this->assertGreaterThanOrEqual($id, 1, 'NEXT_ID_VALUE < 1.');
     }
 
     /**
-     * Test create() method.
+     * Tests create() method.
      */
     public function testCreate() {
         $companyModel = new PetroQuick_Model_Company();
@@ -100,12 +94,14 @@ class PetroQuick_Neo4JGateway_Test_ModelTest extends PHPUnit_Framework_TestCase 
 
         $node1 = $companyModel->create();
 
-        $this->assertEquals(java_values($node1->getProperty(PetroQuick_Model_Company::ID)), '1');
+        $this->assertStringStartsWith($companyModel->getNodeName() . "::",
+            java_values($node1->getProperty(PetroQuick_Model_Company::ID)));
         $this->assertEquals(java_values($node1->getProperty(PetroQuick_Model_Company::TYPE)), 'COMPANY');
 
         $node2 = $companyModel->create();
 
-        $this->assertEquals(java_values($node2->getProperty(PetroQuick_Model_Company::ID)), '2');
+        $this->assertStringStartsWith($companyModel->getNodeName() . "::",
+            java_values($node2->getProperty(PetroQuick_Model_Company::ID)));
         $this->assertEquals(java_values($node2->getProperty(PetroQuick_Model_Company::TYPE)), 'COMPANY');
 
         $node3 = $companyModel->create(array(
@@ -116,16 +112,92 @@ class PetroQuick_Neo4JGateway_Test_ModelTest extends PHPUnit_Framework_TestCase 
             'CEO' => 'Sergey Brin',
         ));
 
-        $this->assertEquals(java_values($node3->getProperty(PetroQuick_Model_Company::ID)), '3');
+        $this->assertStringStartsWith($companyModel->getNodeName() . "::", 
+            java_values($node3->getProperty(PetroQuick_Model_Company::ID)));
         $this->assertEquals(java_values($node3->getProperty('name')), 'Google');
         $this->assertTrue(java_values($node3->getProperty('name')->equals('Google')));
 
         $tx = $companyModel->getGateway()->factoryTransaction();
-        $node = $companyModel->getIndex()->getSingleNode(PetroQuick_Model_Company::ID, '1');
+        $node = $companyModel->getIndex()->getSingleNode(PetroQuick_Model_Company::ID,
+                $node1->getProperty(PetroQuick_Model_Company::ID));
         $tx->success();
         $tx->finish();
         
         $this->assertTrue(java_values($node->equals($node1)), 'node found in index is different');
+
+        $this->assertNotEquals($node1->getProperty(PetroQuick_Model_Company::ID),
+                $node2->getProperty(PetroQuick_Model_Company::ID));
+        $this->assertNotEquals($node1->getProperty(PetroQuick_Model_Company::ID),
+                $node3->getProperty(PetroQuick_Model_Company::ID));
+        $this->assertNotEquals($node3->getProperty(PetroQuick_Model_Company::ID),
+                $node2->getProperty(PetroQuick_Model_Company::ID));
     }
 
+    /**
+     * Tests get() method.
+     */
+    public function testGet() {
+        $companyModel = new PetroQuick_Model_Company();
+        $companyModel->ensureSchemaCreated();
+
+        $node = $companyModel->create();
+        $id = $node->getProperty(PetroQuick_Model_Company::ID);
+
+        $nodeFound = $companyModel->get($id);
+        $this->assertTrue(java_values($nodeFound->equals($node)));
+
+        $id .= '::something';
+        $nodeFound = $companyModel->get($id);
+        $this->assertNull(java_values($nodeFound));
+    }
+
+    /**
+     * Tests delete() method.
+     */
+    public function testDelete() {
+        $companyModel = new PetroQuick_Model_Company();
+        $companyModel->ensureSchemaCreated();
+
+        $node = $companyModel->create();
+        $id = $node->getProperty(PetroQuick_Model_Company::ID);
+
+        $node = $companyModel->get($id);
+        $this->assertNotNull(java_values($node));
+
+        $companyModel->delete($node);
+
+        $node = $companyModel->get($id);
+        $this->assertNull(java_values($node));
+
+        $tx = $companyModel->getGateway()->factoryTransaction();
+        $node = $companyModel->getIndex()->getSingleNode(PetroQuick_Model_Company::ID, $id);
+        $tx->success();
+        $tx->finish();
+
+        $this->assertNull(java_values($node));
+    }
+
+    /**
+     * Tests update() method.
+     */
+    public function testUpdate() {
+        $companyModel = new PetroQuick_Model_Company();
+        $companyModel->ensureSchemaCreated();
+
+        $node = $companyModel->create(array(
+            'name' => 'Google',
+            'type' => 'Internet',
+        ));
+
+        $this->assertEquals(java_values($node->getProperty('name')), 'Google');
+        $this->assertEquals(java_values($node->getProperty('type')), 'Internet');
+
+        $companyModel->update($node, array(
+            'name' => 'Yahoo',
+            'type' => null,
+        ));
+
+        $this->assertEquals(java_values($node->getProperty('name')), 'Yahoo');
+        $this->assertFalse(java_values($node->hasProperty('type')));
+    }
 }

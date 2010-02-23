@@ -6,7 +6,6 @@ require_once(PetroQuick_Neo4JGateway_Config::GATEWAY_URL);
  * Base class for Neo4J models.
  */
 abstract class PetroQuick_Neo4JGateway_Model_Abstract {
-    const NEXT_ID_VALUE = 'NEXT_ID_VALUE';
     const ID = '_id';
     const TYPE = '_type';
 
@@ -101,7 +100,6 @@ abstract class PetroQuick_Neo4JGateway_Model_Abstract {
                 $subrefNode = $this->getNeo()->createNode();
                 $relType = $this->getGateway()->factoryRelationshipType($this->getSubrefNodeName());
                 $refNode->createRelationshipTo($subrefNode, $relType);
-                $subrefNode->setProperty(self::NEXT_ID_VALUE, 1);
                 
                 $tx->success();
             } catch (Exception $e) {
@@ -127,14 +125,13 @@ abstract class PetroQuick_Neo4JGateway_Model_Abstract {
             $relType = $this->getGateway()->factoryRelationshipType($this->getNodeName());
             $subrefNode->createRelationshipTo($node, $relType);
 
-            $nextId = intval(java_values($subrefNode->getProperty(self::NEXT_ID_VALUE)));
-            $subrefNode->setProperty(self::NEXT_ID_VALUE, $nextId + 1);
+            $id = uniqid($this->getNodeName() . '::', true); 
 
-            $node->setProperty(self::ID, $nextId);
+            $node->setProperty(self::ID, $id);
             $node->setProperty(self::TYPE, $this->getNodeName());
 
             $this->getIndex()->index($node, self::TYPE, $this->getNodeName());
-            $this->getIndex()->index($node, self::ID, $nextId);
+            $this->getIndex()->index($node, self::ID, $id);
 
             if (isset($data))
                 $this->_populateData($node, $data);
@@ -147,6 +144,73 @@ abstract class PetroQuick_Neo4JGateway_Model_Abstract {
         $tx->finish();
 
         return $node;
+    }
+
+    /**
+     * Get single node by its Id.
+     *
+     * @param  $nodeId
+     * @return object - org.neo4j.graphdb.Node
+     */
+    public function get($nodeId) {
+        $node = null;
+
+        $tx = $this->getGateway()->factoryTransaction();
+        try {
+            $node = $this->getIndex()->getSingleNode(PetroQuick_Model_Company::ID, $nodeId);
+            $tx->success();
+        } catch (Exception $e) {
+            java_last_exception_get()->printStackTrace();
+            $tx->failure();
+        }
+        $tx->finish();
+
+        return $node;
+    }
+
+    /**
+     * Deletes the node and it's obligatory system indexes (ID and TYPE).
+     *
+     * @param $node - org.neo4j.graphdb.Node 
+     */
+    public function delete($node) {
+        $tx = $this->getGateway()->factoryTransaction();
+        try {
+            $this->getIndex()->removeIndex($node, self::ID, $node->getProperty(self::ID));
+            $this->getIndex()->removeIndex($node, self::TYPE, $node->getProperty(self::TYPE));
+
+            $rels = $node->getRelationships();
+            while (java_values($rels->hasNext()))
+                $rels->next()->delete();
+
+            $node->delete();
+            
+            $tx->success();
+        } catch (Exception $e) {
+            java_last_exception_get()->printStackTrace();
+            $tx->failure();
+        }
+        $tx->finish();
+    }
+
+    /**
+     * Updates a node with a set of properties. A property value may be set to null to remove
+     * corresponding property. 
+     *
+     * @param  $node       - org.neo4j.graphdb.Node
+     * @param  $data array - properties
+     */
+    public function update($node, $data) {
+        $tx = $this->getGateway()->factoryTransaction();
+        try {
+            $this->_populateData($node, $data);
+
+            $tx->success();
+        } catch (Exception $e) {
+            java_last_exception_get()->printStackTrace();
+            $tx->failure();
+        }
+        $tx->finish();
     }
 
     public function getGateway() {
