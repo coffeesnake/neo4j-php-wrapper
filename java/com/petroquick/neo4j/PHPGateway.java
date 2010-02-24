@@ -71,13 +71,4 @@ public class PHPGateway {
         return fulltextIndex;
     }
 
-    public void test1() {
-        Transaction tx = graphDb.beginTx();
-
-        getGraphDb().getAllNodes().iterator().next().delete();
-
-        tx.success();
-        tx.finish();
-    }
-
 }
