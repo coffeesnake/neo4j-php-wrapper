@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * This class is not needed. DynamicRelationshipType could be used instead.
+ *
  * @author Philip Rud
  */
 public class RelationshipTypeWrapper implements RelationshipType {
