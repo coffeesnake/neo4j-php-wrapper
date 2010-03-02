@@ -72,30 +72,31 @@ public class SimpleTest {
         createChildren(inserter.getReferenceNode(), 100, 1);
         inserter.shutdown();
         printTime("nodes created");
-        
 
-        neo = new EmbeddedGraphDatabase(NEO4J_DB);
+        for (int i = 0; i < 10; i++) {
+            neo = new EmbeddedGraphDatabase(NEO4J_DB);
 
-        System.out.println("traversing through all nodes and counting depthSum...");
-        Transaction tx = neo.beginTx();
-        Traverser traverser = neo.getReferenceNode().traverse(
-                Traverser.Order.BREADTH_FIRST,
-                StopEvaluator.END_OF_GRAPH,
-                ReturnableEvaluator.ALL_BUT_START_NODE,
-                DynamicRelationshipType.withName("PARENT"),
-                Direction.OUTGOING
-        );
-                                              
-        int depthSum = 0;
-        for (Node node: traverser)
-            depthSum += (Integer) node.getProperty("level");
+            System.out.println("traversing through all nodes and counting depthSum...");
+            Transaction tx = neo.beginTx();
+            Traverser traverser = neo.getReferenceNode().traverse(
+                    Traverser.Order.BREADTH_FIRST,
+                    StopEvaluator.END_OF_GRAPH,
+                    ReturnableEvaluator.ALL_BUT_START_NODE,
+                    DynamicRelationshipType.withName("PARENT"),
+                    Direction.OUTGOING
+            );
 
-        tx.finish();
-        tx.success();
-        System.out.println("depthSum = " + depthSum);
-        printTime("done traversing");
+            int depthSum = 0;
+            for (Node node: traverser)
+                depthSum += (Integer) node.getProperty("level");
 
-        neo.shutdown();
+            tx.finish();
+            tx.success();
+            System.out.println("depthSum = " + depthSum);
+            printTime("done traversing");
+
+            neo.shutdown();
+        }
         
         System.out.println("neo has been shut down");
     }
