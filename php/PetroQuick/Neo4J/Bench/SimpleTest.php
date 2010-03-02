@@ -55,46 +55,47 @@ class PetroQuick_Neo4J_Bench_SimpleTest {
     public static function main() {
         echo "<pre>";
 
-        self::clearDir(self::$NEO4J_DB, false);
         self::printTime("initializing...");
+
+        self::clearDir(self::$NEO4J_DB, false);
 
         self::$neo = new java("org.neo4j.kernel.EmbeddedGraphDatabase", self::$NEO4J_DB);
         self::$neo->shutdown();
         self::printTime("clean db created");
 
-
         self::$inserter = new java("org.neo4j.kernel.impl.batchinsert.BatchInserterImpl", self::$NEO4J_DB);
-        self::createChildren(self::$inserter->getReferenceNode(), 100, 1);
+        self::createChildren(self::$inserter->getReferenceNode(), 10, 1);
         self::$inserter->shutdown();
         self::printTime("nodes created");
 
-
         self::$neo = new java("org.neo4j.kernel.EmbeddedGraphDatabase", self::$NEO4J_DB);
 
-        echo "\ntraversing through all nodes and counting depthSum...";
-        $tx = self::$neo->beginTx();
-        $traverser = self::$neo->getReferenceNode()->traverse(
-            java('org.neo4j.graphdb.Traverser$Order')->BREADTH_FIRST,
-            java('org.neo4j.graphdb.StopEvaluator')->END_OF_GRAPH,
-            java('org.neo4j.graphdb.ReturnableEvaluator')->ALL_BUT_START_NODE,
-            java('org.neo4j.graphdb.DynamicRelationshipType')->withName('PARENT'),
-            java('org.neo4j.graphdb.Direction')->OUTGOING
-        );
+        for ($i = 0; $i < 10; $i++) {
+            echo "\ntraversing through all nodes and counting depthSum...";
+            $tx = self::$neo->beginTx();
+            $traverser = self::$neo->getReferenceNode()->traverse(
+                java('org.neo4j.graphdb.Traverser$Order')->BREADTH_FIRST,
+                java('org.neo4j.graphdb.StopEvaluator')->END_OF_GRAPH,
+                java('org.neo4j.graphdb.ReturnableEvaluator')->ALL_BUT_START_NODE,
+                java('org.neo4j.graphdb.DynamicRelationshipType')->withName('PARENT'),
+                java('org.neo4j.graphdb.Direction')->OUTGOING
+            );
 
-        $depthSum = 0;
-        $nodes = $traverser->iterator();
-        while (java_values($nodes->hasNext())) {
-            $node = $nodes->next();
-            $depthSum += intval(java_values($node->getProperty("level")));
+            $depthSum = 0;
+            $nodes = $traverser->iterator();
+            while (java_values($nodes->hasNext())) {
+                $node = $nodes->next();
+                $depthSum += intval(java_values($node->getProperty("level")));
+            }
+
+            $tx->finish();
+            $tx->success();
+            echo "\ndepthSum = $depthSum";
+            self::printTime("done traversing");
         }
 
-        $tx->finish();
-        $tx->success();
-        echo "\ndepthSum = $depthSum";
-        self::printTime("done traversing");
-
         self::$neo->shutdown();
-
+                              
         echo "\nneo has been shut down";
         echo "</pre>";
     }
