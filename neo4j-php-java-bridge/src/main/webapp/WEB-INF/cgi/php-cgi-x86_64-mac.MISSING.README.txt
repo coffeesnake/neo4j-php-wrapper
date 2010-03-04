@@ -1,0 +1,1 @@
+You can rename your php fastcgi binary to "php-cgi-x86_64-mac", add it to your web application WEB-INF/cgi directory and re-deploy your web application.
