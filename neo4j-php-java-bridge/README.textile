@@ -4,4 +4,4 @@ To build and run it, do the following steps:
 
 @mvn clean install jetty:run@
 
-to view the PHP test, surf in to "http://localhost:8080/php/test.php:http://localhost:8080/php/test.php"
+to view the PHP test, surf in to "http://localhost:8080/php/test.php":http://localhost:8080/php/test.php
