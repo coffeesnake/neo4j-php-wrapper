@@ -1,8 +1,8 @@
 This is a small test system, designed to demonstrate the integration of PHP and a Neo4j Java server with the PHP-Java-bridge.
 
 To build and run it, do the following steps:
-@code@
+@
 mvn clean install jetty:run
-@code@
+@
 
 to view the PHP test, surf in to !http://localhost:8080/php/test.php!
